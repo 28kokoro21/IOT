@@ -1,0 +1,49 @@
+sudo raspi-config
+Interface Options → I2C → Enable
+sudo reboot
+sudo apt install -y libnfc-bin libnfc-dev libusb-dev libpcsclite-dev i2c-tools
+pip3 install adafruit-circuitpython-pn532 --break-system-packages
+sudo i2cdetect -y 1
+sudo nano /etc/nfc/libnfc.conf
+
+add change
+allow_autoscan = false
+device.name = "PN532 over I2C"
+device.connstring = "pn532_i2c:/dev/i2c-1"
+
+Command 5: i2cdetect –y 1 (optional put sudo)
+nfc-list
+
+py program 
+import subprocess
+import time
+
+NAME = "Vivek"
+
+last_uid = None
+
+try:
+    while True:
+
+        output = subprocess.getoutput("nfc-list")
+
+        if "UID" in output:
+
+            for line in output.splitlines():
+
+                if "UID" in line:
+
+                    uid = line.split(":")[1].strip().replace(" ", "")
+
+                    if uid != last_uid:
+
+                        print(f"{NAME}: {uid}")
+
+                        last_uid = uid
+
+                    break
+
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    print("\nStopped")
